@@ -83,8 +83,8 @@ class heap{
   void unlink(pForestNode link);
   void hover(pForestNode node);
   void toEmpty(pForestNode toDel);
-  bool check(const pForestNode & root) const; //Para la primera lista
-  bool check(const pForestNode & sons, int range) const; //Para las otras listas
+  bool check(const pForestNode & root) const; //For the first list
+  bool check(const pForestNode & sons, int range) const; //For the other lists
   pForestNode link(pForestNode link, pForestNode victim){
     if(link){
       link->broBackward->broForward = victim;
@@ -99,25 +99,25 @@ class heap{
   }
   
   pForestNode littleMerge(pForestNode link1, pForestNode link2){
-    //Mezclamos dos nodos del mismo rango.
+    //Merge both nodes of the same rank
     pForestNode resul;
     if( link1->value < link2->value ){
-      //link2 sera un hijo de link1 y link1 subira de rango
+      //link2 will became a son of link1 and link1 will increase the rank by one
       resul = link1;
       unlink(link2);
-      //Linkar con los hijos
+      //Link with the sons
       resul->sons = link(resul->sons, link2);
-      //Cambiamos enlaces a padres e hijos
+      //Change links of the fathers and sons
       resul->sons = link2;
       link2->father = resul;
     }
     else{
-      //link1 sera un hijo de link2 y link2 subira de rango
+      //link1 will became son of link2 and link2 will increase the rank by one
       resul = link2;
       unlink(link1);
-      //Linkar con los hijos
+      //Link with the sons
       resul->sons = link(resul->sons, link1);
-      //Cambiamos enlaces a padres e hijos
+      //Change the links of the fathers and sons
       resul->sons = link1;
       link1->father = resul;
     }

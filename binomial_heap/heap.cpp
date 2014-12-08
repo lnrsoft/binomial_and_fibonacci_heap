@@ -7,7 +7,6 @@ heap<T>::~heap(){
 
 template <class T>
 void heap<T>::unlink(pForestNode link){
-  //Deslinkamos el nodo de su lista
   link->broBackward->broForward = link->broForward;
   link->broForward->broBackward = link->broBackward;
   link->broBackward = link->broForward = link;
@@ -19,76 +18,77 @@ heap<T> & heap<T>::merge(heap<T> & oper1,heap<T> & oper2){
     heap<T> res;
     pForestNode o1 = oper1.elems, o2 = oper2.elems;
     
-    if(o1 != NULL){
-      //Oper1->elems != NULL
-      if(o2 != NULL){
-	//Oper1->elems != NULL && Oper2->elems != NULL
-	//Aqui es el trabajo de verdad del merge.
+    if (o1 != NULL){
+      //oper1->elems != NULL
+      if (o2 != NULL){
+	//oper1->elems != NULL && oper2->elems != NULL
+
 	o1 = oper1.elems->broBackward;
 	o2 = oper2.elems->broBackward;
 	
-	//Comprobamos el minimo
-	if(oper1.min->value < oper2.min->value)
+	//Check the minimum
+	if (oper1.min->value < oper2.min->value)
 	  res.min = oper1.min;
 	else
 	  res.min = oper2.min;
 	
-	//Empezamos la faena
-	pForestNode sig1 = NULL; //El hermano derecho de o1
-	pForestNode sig2 = NULL; //El hermano derecho de o2
+	//Begin the party
+	pForestNode next1 = NULL; //It will be the right brother of o1
+	pForestNode next2 = NULL; //It will be the right brother of o2
 	pForestNode lmerged = NULL;
 	
 	while( o1 && o2 ){
 	  if(o1->range == o2->range){
-	    //Los rangos son los mismo, debemos fusionar estos nodos.
+	    //Both have the same rank, we have to merge them
 	    
-	    //Calculamos siguientes.
-	    o1->broBackward != o1 ? sig1 = o1->broBackward : sig1 = NULL;
-	    o2->broBackward != o2 ? sig2 = o2->broBackward : sig2 = NULL;
-	    //Mezclamos, hacemos unlink y arreglamos punteros.
+	    //Calculate the next nodes to merge
+	    o1->broBackward != o1 ? next1 = o1->broBackward : next1 = NULL;
+	    o2->broBackward != o2 ? next2 = o2->broBackward : next2 = NULL;
+	    //Merge, unlink and fix the pointer
 	    lmerged = littleMerge(o1, o2);
 	    unlink(lmerged);
 	    lmerged->broBackward = lmerged->broForward = lmerged;
-	    //Avanzamos.
-	    o1 = sig1;
-	    o2 = sig2;
-	    
-	    //Ahora empezamos con un bucle para mezclarlo con lmerged.
+	    //Move to the next nodes
+	    o1 = next1;
+	    o2 = next2;
+
+	    //Begin loop to merge lmerged with the current elements
 	    do{
-	      if(sig1 && lmerged && lmerged->range == sig1->range){
-		//sig1 y lmerged tienen el mismo rango.
-		if(sig2 && lmerged && lmerged->range == sig2->range){
-		  //sig1, sig2 y lmerged tienen el mismo rango.
-		  o1->broBackward != o1 ? sig1 = o1->broBackward : sig1 = NULL;
-		  o2->broBackward != o2 ? sig2 = o2->broBackward : sig2 = NULL;
+	      if(next1 && lmerged && lmerged->range == next1->range){
+		//next1 and lmerged have the same rank
+		if(next2 && lmerged && lmerged->range == next2->range){
+		  //next1, next2 and lmerged have the same rank
+		  o1->broBackward != o1 ? next1 = o1->broBackward : next1 = NULL;
+		  o2->broBackward != o2 ? next2 = o2->broBackward : next2 = NULL;
 		  res.elems = link(res.elems, lmerged);
 		  lmerged = littleMerge(o1, o2);
 		  unlink(lmerged);
 		  lmerged->broBackward = lmerged->broForward = lmerged;
-		  o1 = sig1;
-		  o2 = sig2;
+		  o1 = next1;
+		  o2 = next2;
 		}
 		else{
-		  //sig1 y lmerged tienen el mismo rango, aunque sig2 NO.
-		  o1->broBackward != o1 ? sig1 = o1->broBackward : sig1 = NULL;
+		  //next1 and lmerged have the same rank, however next2 has NOT.
+		  o1->broBackward != o1 ? next1 = o1->broBackward : next1 = NULL;
 		  lmerged = littleMerge(lmerged, o1);
 		  unlink(lmerged);
 		  lmerged->broBackward = lmerged->broForward = lmerged;
-		  o1 = sig1;
+		  o1 = next1;
 		}
 	      }
 	      else{
-		//sig1 y lmerged NO tienen el mismo rango.
-		if(sig2 && lmerged && lmerged->range == sig2->range){
-		  //sig2 y lmerged tienen el mismo rango, sig1 NO.
-		  o2->broBackward != o2 ? sig2 = o2->broBackward : sig2 = NULL;
+		//next1 and lmerged have NOT the same rank
+		if(next2 && lmerged && lmerged->range == next2->range){
+		  //next2 and lmerged have the same rank, however next1 has NOT
+		  o2->broBackward != o2 ? next2 = o2->broBackward : next2 = NULL;
 		  lmerged = littleMerge(lmerged, o2);
 		  unlink(lmerged);
 		  lmerged->broBackward = lmerged->broForward = lmerged;
-		  o2 = sig2;
+		  o2 = next2;
 		}
 		else{
-		  //sig1 y lmerged y sig2 y lmerged tienen diferentes rangos.
+		  //next1 and lmerged have NOT the same rank
+		  //AND next2 and lmerged have NOT the same rank either
 		  if(lmerged){
 		    res.elems = link(res.elems, lmerged);
 		    lmerged = NULL;
@@ -98,76 +98,73 @@ heap<T> & heap<T>::merge(heap<T> & oper1,heap<T> & oper2){
 	    }while(lmerged);
 	  }
 	  else{
-	    //Uno de los nodos tiene un rango mayor
+	    //One of the nodes has a greater rank
 	    if(o1->range > o2->range){
-	      //El rango del o1 es mayor, cogemos el nodo del o2 y lo metemos en resul
-	      o2->broBackward != o2 ? sig2 = o2->broBackward : sig2 = NULL;
+	      //o1's rank is bigger, then take the o2's node and put it in resul
+	      o2->broBackward != o2 ? next2 = o2->broBackward : next2 = NULL;
 	      unlink(o2);
 	      res.elems = link(res.elems, o2);
-	      //Calculamos siguientes
-	      //o2 = sig2;
+	      //Update next
 	      if (o1)
-		sig1 = o1;
+		next1 = o1;
 	    }
 	    else{
-	      //El rango del o2 es mayor, cogemos el nodo del o1 y lo metemos en resul
-	      o1->broBackward != o1 ? sig1 = o1->broBackward : sig1 = NULL;
+	      //o2's rank is bigger, then take the o1's node and put it in resul
+	      o1->broBackward != o1 ? next1 = o1->broBackward : next1 = NULL;
 	      unlink(o1);
 	      res.elems = link(res.elems, o1);
-	      //Calculamos siguientes
-	      //o1 = sig1;
+	      //Update next
 	      if (o2)
-		sig2 = o2;
+		next2 = o2;
 	    }
 	  }
-	  //Avanzamos
-	  o1 = sig1;
-	  o2 = sig2;
+	  //Go Forward
+	  o1 = next1;
+	  o2 = next2;
 	} //end while
-	
-	//Algunos de los heaps no tiene mas nodos.
+
+	//Some of the heaps do not have more nodes
 	if(o1){
-	  //El o1 aun tiene nodos
+	  //o1 has nodes
 	  while(o1){
-	    o1->broBackward != o1 ? sig1 = o1->broBackward : sig1 = NULL;
+	    o1->broBackward != o1 ? next1 = o1->broBackward : next1 = NULL;
 	    unlink(o1);
 	    res.elems = link(res.elems, o1);
-	    o1 = sig1;
+	    o1 = next1;
 	  }
 	}
 	else{
-	  //El o2 aun tiene nodos
+	  //o2 has nodes
 	  while(o2){
-	    o2->broBackward != o2 ? sig2 = o2->broBackward : sig2 = NULL;
+	    o2->broBackward != o2 ? next2 = o2->broBackward : next2 = NULL;
 	    unlink(o2);
 	    res.elems = link(res.elems, o2);
-	    o2 = sig2;
+	    o2 = next2;
 	  }
 	}
-	//Fin de la fiesta
+	//Party is over
       }
       else{
-	//Oper1->elems != NULL && Oper2->elems == NULL
-	//Devolvemos Oper1 y hemos acabado.
+	//Return oper1 and finish
 	res.min = oper1.min;
 	res.elems = oper1.elems;
       }
     }
     else{
-      //Oper1->elems == NULL
+      //oper1->elems == NULL
       if(o2 != NULL){
-	//Oper1->elems == NULL && Oper2->elems != NULL
-	//Devolvemos Oper2 y hemos acabado.
+	//oper1->elems == NULL && oper2->elems != NULL
+	//Return oper2 and finish
 	res.min = oper2.min;
 	res.elems = oper2.elems;
       }
       else{
-	//Oper1->elems == NULL && Oper2->elems == NULL
-	//Hemos acabado porque no hay nada que hacer.
+	//oper1->elems == NULL && oper2->elems == NULL
+	//It is over, because is nothing else to do
       }
     }
-    
-    //Pasamos los valores de res a o1
+
+    //Move the values from res to o1
     pForestNode max, primero;
     max = primero = res.elems;
     while(primero != res.elems->broBackward){
@@ -212,7 +209,6 @@ void heap<T>::deleteMin(){
       if(brothers){
 	pForestNode first=brothers, minimo=brothers, next=brothers->broForward, maximo=brothers;
 	while(first != next){
-	  //cout << "El minimo es "<< minimo->value<<", y el maximo es "<<maximo->range<<endl;
 	  if(next->value < minimo->value)
 	    minimo = next;
 	  if(next->range > maximo->range)
@@ -222,18 +218,7 @@ void heap<T>::deleteMin(){
 	hbro.min = minimo;
 	hbro.elems = maximo;
       }
-      //hbro.elems = brothers;
-      /*cout << "Compruebo los hijos" << endl;
-      hsons.check();
-      cout << "Compruebo los hermanos" << endl;
-      hbro.check();
-      cout << "Ya estan comprobados" << endl;
-      */
       *this = merge(hsons, hbro);
-      /*cout << "Despues del merge me compruebo a mi mismo" << endl;
-      check();
-      cout << "Fin de las comprobaciones" << endl;
-      */
       hsons.elems = hsons.min = NULL;
     }
     else{ //One node
